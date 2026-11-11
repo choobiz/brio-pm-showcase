@@ -2,7 +2,7 @@
 
 An estimating and project management platform I built for BRIO Construction, a licensed residential builder in North Vancouver, BC. It runs the office side of the business (clients, drawings, quantity takeoff, estimates, contracts, schedules, invoices) and a client portal where owners review and accept proposals.
 
-This repository is a sanitized snapshot of a private production system, published so people can read the code. It has a single commit and no history. Client names, street addresses, emails, phone numbers, permit numbers and infrastructure details were replaced with placeholders such as "Sample Client" and "1234 Example Way". Deployment config, security runbooks, internal reports and real documents were left out. Many code comments still refer to real incidents ("on 456 W Sample, 2026-10-26 ..."); the project names in those comments are placeholders, the incidents are real.
+This repository is a sanitized snapshot of a private production system, published so people can read the code. It starts from a single snapshot commit and carries none of the private repository's history. Client names, street addresses, emails, phone numbers, permit numbers and infrastructure details were replaced with placeholders such as "Sample Client" and "1234 Example Way". Deployment config, security runbooks, internal reports and real documents were left out. Many code comments still refer to real incidents ("on 456 W Sample, 2026-10-26 ..."); the project names in those comments are placeholders, the incidents are real.
 
 I am the only developer, and I also wrote the product requirements as the business owner.
 
