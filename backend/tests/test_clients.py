@@ -169,15 +169,15 @@ def test_search_finds_by_phone_substring(db_session):
     svc.find_or_create_client(db_session, name="Alex Example", phone="604-555-0193")
     db_session.flush()
 
-    rows = svc.search_clients(db_session, "8016")
+    rows = svc.search_clients(db_session, "0181")
     assert len(rows) == 1
     assert rows[0].name == "Sample Client"
 
 
 def test_search_finds_by_name_substring(db_session):
     svc.find_or_create_client(db_session, name="Sample Client")
-    svc.find_or_create_client(db_session, name="Alex Example")
+    svc.find_or_create_client(db_session, name="Alex Sample")
     db_session.flush()
 
-    rows = svc.search_clients(db_session, "omidvar")
-    assert {r.name for r in rows} == {"Sample Client", "Alex Example"}
+    rows = svc.search_clients(db_session, "sample")
+    assert {r.name for r in rows} == {"Sample Client", "Alex Sample"}

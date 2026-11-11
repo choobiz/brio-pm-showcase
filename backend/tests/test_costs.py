@@ -125,7 +125,7 @@ def test_the_same_supplier_invoice_twice_is_refused(db_session):
     pid = _project(db_session, me)
     first = router.add_bill(pid, _bill(), db_session, me)
     with pytest.raises(HTTPException) as e:
-        router.add_bill(pid, _bill(vendor=" dick's lumber ", invoice_number="12 345"), db_session, me)
+        router.add_bill(pid, _bill(vendor=" sample lumber ", invoice_number="12 345"), db_session, me)
     assert e.value.status_code == 409
     # Another supplier may use the same number, and editing the bill doesn't trip on itself.
     router.add_bill(pid, _bill(vendor="Sample Form Rentals"), db_session, me)
