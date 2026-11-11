@@ -1,0 +1,41 @@
+{
+  "name": "brio-pm-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "check:server-imports": "node scripts/check-server-imports.mjs",
+    "prebuild": "node scripts/check-server-imports.mjs && node scripts/check-workspace-errors.mjs && node scripts/check-bbox-alignment.mjs && node --experimental-strip-types --no-warnings scripts/check-speech-text.mjs && node --experimental-strip-types --no-warnings scripts/check-scale-select.mjs && node --experimental-strip-types --no-warnings scripts/check-candidate-key.mjs && node --experimental-strip-types --no-warnings scripts/check-scale-check.mjs && node --experimental-strip-types --no-warnings scripts/check-refined-stats.mjs && node --experimental-strip-types --no-warnings scripts/check-scope-pack-links.mjs && node --experimental-strip-types --no-warnings scripts/check-estimate-email.mjs && node --experimental-strip-types --no-warnings scripts/check-selection-pdf-modes.mjs && node --experimental-strip-types --no-warnings scripts/check-schedule-plan.mjs",
+    "check:workspace-errors": "node scripts/check-workspace-errors.mjs",
+    "check:bbox": "node scripts/check-bbox-alignment.mjs"
+  },
+  "dependencies": {
+    "@auth/pg-adapter": "^1.11.2",
+    "@tailwindcss/typography": "^0.5.20",
+    "jszip": "^3.10.1",
+    "next": "^16.2.6",
+    "next-auth": "5.0.0-beta.31",
+    "nodemailer": "^7.0.7",
+    "pg": "^8.20.0",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "react-markdown": "^9.1.0",
+    "react-pdf": "^9.2.1",
+    "remark-gfm": "^4.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/nodemailer": "^7.0.0",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.7.2"
+  }
+}

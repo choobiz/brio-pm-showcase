@@ -1,0 +1,5 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "name": "brio-pm-frontend",
+  "framework": "nextjs"
+}

@@ -1,0 +1,47 @@
+# Keep secrets OUT of the image.
+#
+# The Dockerfile does `COPY . .` and there was no .dockerignore, so every env
+# file in backend/ was baked into brio-pm-api:latest. As of 2026-09-10 that image
+# contained FOUR:
+#
+#   /app/.env                      ~16 vars of live credentials
+#   /app/.env.bak
+#   /app/.env.bak-1778794467
+#   /app/.env.bak.1778960402
+#
+# Both deploy-api-1 and deploy-worker-1 run this image, and brio-pm holds client
+# estimates, invoices and documents. Rotating a credential on the host never
+# removed it from the image, and the backups meant historical values persisted
+# too — including ones already rotated for security reasons.
+#
+# Found 2026-09-10 while fixing the same defect in another internal app, where it caused a
+# real failure rather than a theoretical one: a secret was cleared on the host,
+# the container recreated, `docker exec ... echo $VAR` correctly reported empty,
+# and the application kept reading the baked copy, because pydantic-settings
+# loads `.env` as a FILE. The host said one thing and the app read another, in
+# the middle of an outage.
+#
+# Nothing excluded here is needed at runtime: deploy/docker-compose.prod.yml
+# passes `env_file: ../backend/.env` to both api and worker, so the values arrive
+# as environment variables, which pydantic reads at higher priority than a file.
+.env
+.env.*
+!.env.example
+
+# Local development artifacts. .venv would add hundreds of MB and shadow the
+# packages the build installs.
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Scratch and generated output that has no business in a runtime image.
+scratchpad/
+*.log
+
+# tests/ is deliberately NOT excluded — the suite is run inside the runtime image
+# against a throwaway database, never against production.

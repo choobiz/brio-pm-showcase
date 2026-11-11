@@ -1,0 +1,168 @@
+"use client";
+
+import { useEffect, useState } from "react";
+
+import { getSheetView, type SheetView, type UnresolvedQuantity } from "@/lib/drawingAnalysis";
+
+/**
+ * A CAD drawing rendered by the server, with one quantity's source marked —
+ * the counted blocks ringed and numbered, or the measured rooms outlined.
+ *
+ * Shared by the Takeoff page and the older Drawing analysis page.
+ */
+
+/** How each quantity type reads on the drawing, in the reviewer's words. */
+const HOW_MEASURED: Record<string, string> = {
+  door_count: "Every door block inside the plan view, ringed and numbered below.",
+  window_count: "Every window block inside the plan view, ringed and numbered below.",
+  plumbing_fixture_count: "Every fixture block inside the plan view.",
+  floor_area_sf:
+    "The measured rooms, outlined. Areas are to the wall centreline, which is what an architect's own area labels state.",
+  roof_area_sf:
+    "The largest storey's rooms — a plan projection. It excludes eave overhang and roof slope, neither of which a floor plan shows.",
+  perimeter_lf:
+    "Traced from the building envelope, and nothing is marked: a traced outline is only accepted when its length is consistent with the area it encloses, so where it was refused the figure has to be measured off the sheet.",
+};
+
+export function DrawingPane({
+  projectId,
+  q,
+}: {
+  projectId: string;
+  q: Pick<UnresolvedQuantity, "quantity_type" | "source_document_id"> | null;
+}) {
+  const [sheet, setSheet] = useState<SheetView | null>(null);
+  // null means "whichever view the takeoff actually measured" — on a sheet that
+  // also carries the existing house, view 0 is the wrong building.
+  const [view, setView] = useState<number | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const docId = q?.source_document_id ?? null;
+
+  useEffect(() => {
+    if (!docId) {
+      setSheet(null);
+      return;
+    }
+    let live = true;
+    setLoading(true);
+    setErr(null);
+    getSheetView(projectId, docId, {
+      view: view ?? undefined,
+      highlight: q?.quantity_type,
+    })
+      .then((s) => live && setSheet(s))
+      .catch((e) => live && setErr((e as Error).message))
+      .finally(() => live && setLoading(false));
+    return () => {
+      live = false;
+    };
+  }, [projectId, docId, view, q?.quantity_type]);
+
+  if (!q) {
+    return (
+      <div className="flex min-h-[24rem] items-center justify-center border border-dashed border-slate-300 p-6 text-center text-sm text-slate-400">
+        Select a quantity to see it on the drawing.
+      </div>
+    );
+  }
+  if (!docId) {
+    return (
+      <div className="flex min-h-[24rem] items-center justify-center border border-dashed border-slate-300 p-6 text-center text-sm text-slate-500">
+        This figure was entered by hand, not read off a drawing, so there is
+        nothing to show.
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-w-0 lg:sticky lg:top-4 lg:self-start">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <p className="text-xs font-medium text-slate-700">
+          {sheet?.filename ?? "Drawing"}
+          {sheet?.view ? (
+            <span className="ml-1 font-normal text-slate-400">
+              · {sheet.view.width_ft} × {sheet.view.height_ft} ft
+            </span>
+          ) : null}
+        </p>
+        {sheet && sheet.views.length > 1 ? (
+          <div className="flex gap-1">
+            {sheet.views.map((v) => (
+              <button
+                key={v.index}
+                type="button"
+                onClick={() => setView(v.index)}
+                title={
+                  v.included
+                    ? "Measured — the numbers come from this view"
+                    : "Existing work or context — excluded from the totals"
+                }
+                className={`border px-2 py-0.5 text-xs ${
+                  v.index === sheet.view?.index
+                    ? "border-slate-900 bg-slate-900 text-white"
+                    : "border-slate-300 hover:bg-slate-50"
+                } ${v.included ? "" : "text-slate-400"}`}
+              >
+                {v.title ?? `View ${v.index + 1}`}
+                {v.included ? "" : " (context)"}
+              </button>
+            ))}
+          </div>
+        ) : null}
+      </div>
+
+      <p className="mt-1 text-xs text-slate-500">
+        {HOW_MEASURED[q.quantity_type] ??
+          "Measured from the drawing line-work inside the plan view."}
+      </p>
+
+      <div className="mt-2 border border-slate-200 bg-white p-2">
+        {err ? (
+          <p className="p-4 text-sm text-red-600">{err}</p>
+        ) : loading ? (
+          <p className="p-4 text-sm text-slate-400">Reading the drawing… The first time a file opens this takes about 15 seconds; after that it is quick.</p>
+        ) : sheet?.svg ? (
+          <div
+            className="[&>svg]:h-auto [&>svg]:max-h-[34rem] [&>svg]:w-full"
+            /* The SVG is generated by our own renderer from the CAD file; it
+               contains no script and no external reference. */
+            dangerouslySetInnerHTML={{ __html: sheet.svg }}
+          />
+        ) : (
+          <p className="p-4 text-sm text-slate-400">Nothing to draw.</p>
+        )}
+      </div>
+
+      {/* Not while the next quantity loads: the previous one's list (doors)
+          sat under "Reading the drawing…" for floor area. */}
+      {!loading && sheet?.marks?.length ? (
+        <ol className="mt-2 space-y-0.5 text-xs text-slate-600">
+          {sheet.marks.map((m, i) => (
+            <li key={`${m.x},${m.y},${i}`} className="flex gap-2">
+              <span className="w-5 shrink-0 text-right font-semibold text-red-600">
+                {i + 1}
+              </span>
+              {/* The block name is what makes a count checkable: "Overhead -
+                  18' x 8'" is a garage door and should read as one. */}
+              <span className="min-w-0 break-words">{m.name}</span>
+            </li>
+          ))}
+        </ol>
+      ) : null}
+
+      {sheet?.rooms?.length ? (
+        <p className="mt-2 text-xs text-slate-600">
+          {sheet.rooms.length} room(s):{" "}
+          {sheet.rooms.map((r) => r.centerline_sf).join(" + ")} ={" "}
+          <b>
+            {Math.round(
+              sheet.rooms.reduce((a, r) => a + r.centerline_sf, 0) * 10,
+            ) / 10}{" "}
+            sf
+          </b>
+        </p>
+      ) : null}
+    </div>
+  );
+}

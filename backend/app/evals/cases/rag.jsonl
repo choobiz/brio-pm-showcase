@@ -1,0 +1,3 @@
+# Golden cases for the `rag` kind — retrieval recall + answer grounding. Synthetic.
+{"id": "rag-permit-expiry", "kind": "rag", "input": {"query": "when does the building permit expire?"}, "expect": {"must_retrieve": ["permit"], "answer_must_include": ["2027"]}, "notes": "answer lives in the permit doc"}
+{"id": "rag-contract-value", "kind": "rag", "input": {"query": "what is the fixed contract price?"}, "expect": {"must_retrieve": ["contract"], "answer_must_include": ["85,000"]}, "notes": "answer lives in the contract doc"}

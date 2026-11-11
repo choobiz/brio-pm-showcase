@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: brio
+      POSTGRES_PASSWORD: brio
+      POSTGRES_DB: brio_pm
+    ports:
+      - "5434:5432"
+    volumes:
+      - .pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brio -d brio_pm"]
+      interval: 5s
+      timeout: 3s
+      retries: 10

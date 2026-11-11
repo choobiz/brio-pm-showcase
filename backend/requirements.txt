@@ -1,0 +1,26 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+sqlalchemy==2.0.36
+alembic==1.14.0
+psycopg[binary]==3.2.3
+pydantic==2.10.3
+pydantic-settings==2.7.0
+python-multipart==0.0.19
+python-jose[cryptography]==3.5.0
+boto3==1.35.84
+anthropic==0.43.0
+openpyxl==3.1.5  # reads legacy .xlsx estimates in the Drive migration
+python-docx==1.1.2  # reads .docx specs and schedules into the scope prompt
+pymupdf==1.26.6  # vector PDF parsing for quantity takeoff (AGPL — internal use only)
+weasyprint==62.3
+# Project notes are authored as markdown and must also leave the building as a
+# PDF for suppliers, who get no login. Used only by services/narrative_pdf.py.
+markdown==3.7
+pydyf==0.10.0  # must match weasyprint 62.3 — newer pydyf changed Stream.transform
+sse-starlette==2.1.3
+httpx==0.28.1
+python-dotenv==1.0.1
+pytest==8.3.4
+pytest-asyncio==0.25.0
+ezdxf>=1.4
+numpy>=1.26  # rasterised room-area measurement (room_areas.py)
